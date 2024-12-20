@@ -1,0 +1,56 @@
+name: Deploy Sitefinity App to Azure
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: windows-latest
+
+    env:
+      DOTNET_VERSION: '4.8' # Adjust to the .NET version your Sitefinity app requires
+      AZURE_WEBAPP_NAME: 'valuemomentum-app'
+      AZURE_SUBSCRIPTION: 'Microsoft Regional Director Subscription'
+
+    steps:
+
+    # Step 1: Checkout the code
+    - name: Checkout source code
+      uses: actions/checkout@v3
+
+    # Step 2: Setup .NET
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    # Step 3: Restore NuGet packages
+    - name: Restore NuGet packages
+      run: |
+        nuget restore **/*.sln
+
+    # Step 4: Build the solution
+    - name: Build Solution
+      run: |
+        msbuild **/*.sln /p:Configuration=Release /p:Platform="Any CPU"
+
+    # Step 5: Publish the artifacts
+    - name: Publish Solution
+      run: |
+        msbuild **/*.sln /p:Configuration=Release /p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageLocation=$(System.DefaultWorkingDirectory)/publish
+
+    - name: Upload Build Artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: build-artifacts
+        path: publish/**/*.zip
+
+    # Step 6: Deploy to Azure Web App
+    - name: Deploy to Azure Web App
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: ${{ env.AZURE_WEBAPP_NAME }}
+        package: publish/**/*.zip
+        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
