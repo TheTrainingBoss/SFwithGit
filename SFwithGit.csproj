@@ -23,6 +23,14 @@
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
   </PropertyGroup>
+ <PropertyGroup>
+  <TargetFramework>v4.8</TargetFramework>
+  <RestoreAdditionalProjectSources>
+   https://api.nuget.org/v3/index.json;
+   https://nuget.sitefinity.com/nuget;
+   $(MSBuildThisFileDirectory)/../References/
+  </RestoreAdditionalProjectSources>
+ </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
